@@ -54,8 +54,6 @@ pip install -r requirements.txt
 
 ## 🖥️ Sample Output
 
-Paste a sample of your app's CLI or Streamlit output here so a reader can see what a generated plan looks like:
-
 Today's Schedule
 ================
 9:00 AM - Medication (5 min)
