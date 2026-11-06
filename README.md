@@ -32,6 +32,14 @@ Your final app should:
 - **Daily and weekly recurrence** — Completing a recurring task creates its next occurrence using `timedelta`.
 - **Streamlit interface** — Add pets and tasks interactively, view current tasks, and generate a schedule with success and warning messages.
 
+## Core Classes
+
+- **Owner** — Stores the owner profile, multiple pets, preferences, and access to all pet tasks.
+- **Pet** — Stores pet information and manages that pet's care tasks.
+- **Task** — Implemented as `CareTask`; stores task details, completion status, preferred time, and due date.
+- **Scheduler** — Implemented as `Planner`; retrieves and organizes tasks across all of an owner's pets, creates daily plans, filters tasks, sorts by time, and reports conflicts.
+- **DailyPlan** — Stores selected and deferred tasks for a planning date.
+
 ## Getting started
 
 ### Setup
@@ -40,6 +48,18 @@ Your final app should:
 python -m venv .venv
 source .venv/bin/activate  # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
+```
+
+Run the terminal demo with:
+
+```bash
+python main.py
+```
+
+Run the Streamlit interface with:
+
+```bash
+streamlit run app.py
 ```
 
 ### Suggested workflow
@@ -87,7 +107,7 @@ tests/test_pawpal.py .....                                               [100%]
 ============================== 5 passed in 0.01s ===============================
 ```
 
-**Confidence Level:** (4/5 stars)
+**Confidence Level:** ★★★★☆ (4/5 stars)
 
 The tests cover the most important implemented behaviors, including task management,
 sorting, recurrence, and conflict detection. Additional tests for invalid input,

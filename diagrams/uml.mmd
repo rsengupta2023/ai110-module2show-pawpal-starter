@@ -3,8 +3,9 @@ classDiagram
         +String name
         +Pet[] pets
         +OwnerPreferences preferences
-        +addPet(pet)
-        +removePet(pet)
+        +add_pet(pet)
+        +remove_pet(pet)
+        +get_all_tasks()
     }
 
     class Pet {
@@ -12,13 +13,13 @@ classDiagram
         +String species
         +int age
         +String breed
-        +String healthNeeds
-        +String petPreferences
-        +CareTask[] careTasks
-        +addTask(task)
-        +removeTask(task)
-        +updateHealthNeeds(healthNeeds)
-        +getTasks()
+        +String health_needs
+        +String pet_preferences
+        +CareTask[] care_tasks
+        +add_task(task)
+        +remove_task(task)
+        +update_health_needs(health_needs)
+        +get_tasks()
     }
 
     class CareTask {
@@ -29,54 +30,66 @@ classDiagram
         +String priority
         +String frequency
         +String deadline
-        +String preferredTime
+        +String preferred_time
         +bool completed
-        +markComplete()
-        +markIncomplete()
-        +updateDetails()
-        +isDue()
-        +fitsTimeAvailable(minutes)
+        +Date due_date
+        +mark_complete()
+        +mark_incomplete()
+        +update_details(details)
+        +is_due()
+        +fits_time_available(minutes)
+        +next_occurrence()
     }
 
     class OwnerPreferences {
-        +int availableTime
-        +String preferredTaskTimes
-        +String priorityPreferences
-        +String excludedActivities
-        +int maximumDailyTasks
-        +updatePreferences()
-        +isPreferredTime(task)
-        +allowsTask(task)
-        +getAvailableMinutes()
+        +int available_time
+        +String preferred_task_times
+        +String priority_preferences
+        +String excluded_activities
+        +int maximum_daily_tasks
+        +update_preferences(preferences)
+        +is_preferred_time(task)
+        +allows_task(task)
+        +get_available_minutes()
     }
 
     class DailyPlan {
-        +Date date
-        +CareTask[] selectedTasks
-        +CareTask[] deferredTasks
-        +int totalDuration
-        +int availableTime
+        +Date plan_date
+        +CareTask[] selected_tasks
+        +CareTask[] deferred_tasks
+        +int total_duration
+        +int available_time
         +String explanation
-        +addTask(task)
-        +removeTask(task)
-        +calculateTotalDuration()
-        +isWithinTimeLimit()
-        +generateExplanation()
-        +getSummary()
+        +add_task(task)
+        +remove_task(task)
+        +calculate_total_duration()
+        +is_within_time_limit()
+        +generate_explanation()
+        +get_summary()
     }
 
     class Planner {
-        +Date planningDate
-        +collectDueTasks(date)
-        +prioritizeTasks(tasks)
-        +buildDailyPlan()
-        +deferTask(task)
-        +explainDecision(task)
+        +Date plan_date
+        +Owner owner
+        +DailyPlan current_plan
+        +collect_due_tasks(date_to_plan)
+        +prioritize_tasks(tasks)
+        +sort_by_time(tasks)
+        +filter_tasks(tasks, completed, pet_name)
+        +detect_conflicts(tasks)
+        +build_daily_plan()
+        +defer_task(task)
+        +explain_decision(task)
+        +complete_task(task)
     }
 
-    Owner "1" *-- "many" Pet : has
-    Owner "1" *-- "1" OwnerPreferences : has
-    Pet "1" *-- "many" CareTask : has
-    Planner --> Owner : uses
-    Planner "1" --> "1" DailyPlan : creates
-    DailyPlan "1" o-- "many" CareTask : contains
+    Owner "1" *-- "0..*" Pet : owns
+    Owner "1" *-- "0..1" OwnerPreferences : has
+    Pet "1" *-- "0..*" CareTask : has
+    Planner "1" --> "1" Owner : schedules for
+    Planner "1" --> "0..1" DailyPlan : creates
+    DailyPlan "1" o-- "0..*" CareTask : contains
+    CareTask ..> CareTask : creates next occurrence
+
+    note for CareTask "Public alias: Task"
+    note for Planner "Public alias: Scheduler"
