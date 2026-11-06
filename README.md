@@ -22,6 +22,16 @@ Your final app should:
 - Display the plan clearly (and ideally explain the reasoning)
 - Include tests for the most important scheduling behaviors
 
+## Features
+
+- **Pet and task management** — Create an owner profile, add multiple pets, and attach care tasks to each pet.
+- **Chronological sorting** — `Scheduler.sort_by_time()` orders tasks by preferred time and supports both 24-hour and AM/PM formats.
+- **Pet and status filtering** — `Scheduler.filter_tasks()` filters tasks by pet name, completion status, or both.
+- **Daily planning** — `Scheduler.build_daily_plan()` prioritizes due tasks and selects tasks that fit the owner's available time.
+- **Conflict warnings** — `Scheduler.detect_conflicts()` identifies exact matching task times and returns readable warnings instead of stopping the program.
+- **Daily and weekly recurrence** — Completing a recurring task creates its next occurrence using `timedelta`.
+- **Streamlit interface** — Add pets and tasks interactively, view current tasks, and generate a schedule with success and warning messages.
+
 ## Getting started
 
 ### Setup
@@ -102,14 +112,43 @@ The current conflict check identifies exact matching start times. It does not ye
 overlaps caused by task durations, such as a 9:00 AM task lasting 30 minutes and another
 task starting at 9:15 AM.
 
-## 📸 Demo Walkthrough
+## Demo Walkthrough
 
-Describe your app in numbered steps so a reader can follow along without watching a video:
+1. Start the Streamlit app and enter the owner's name in the **Owner and Pets** section.
+2. Use **Add pet** to create a pet profile with its name, species, and age. The pet is stored in
+   Streamlit session state so it remains available across page reruns.
+3. Select a pet, enter a task title, duration, priority, and preferred time, then click **Add task**.
+   The task is created through the backend `Pet.add_task()` method and appears in the current-task table.
+4. Click **Generate schedule** to retrieve incomplete tasks through the `Scheduler`, prioritize them,
+   and display them in chronological order using `Scheduler.sort_by_time()`.
+5. Review the schedule table, which includes the pet, task, preferred time, duration, and priority.
+   If two tasks have the same preferred time, the UI displays a warning identifying both tasks and
+   suggesting that one preferred time be changed. The scheduler also supports filtering tasks by pet
+   or completion status and creates the next occurrence when a daily or weekly task is completed.
 
-1. <!-- Describe this step -->
-2. <!-- Describe this step -->
-3. <!-- Describe this step -->
-4. <!-- Describe this step -->
-5. <!-- Add more steps as needed -->
+The terminal demonstration in [`main.py`](./main.py) produces output like this:
 
-**Screenshot or video** *(optional)*: <!-- Insert a screenshot or link to a demo video here -->
+```text
+Today's Schedule
+================
+08:00 - Morning walk (20 min)
+09:00 - Morning feeding (10 min)
+09:00 - Medication (5 min)
+18:00 - Evening feeding (10 min)
+
+Schedule Warnings
+-----------------
+Warning: Conflict at 09:00: Mochi: Morning feeding, Luna: Medication are scheduled at the same time.
+
+Mochi's Tasks
+-------------
+18:00 - Evening feeding
+08:00 - Morning walk
+09:00 - Morning feeding
+
+Incomplete Tasks
+----------------
+18:00 - Evening feeding
+09:00 - Morning feeding
+09:00 - Medication
+```

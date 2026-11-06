@@ -85,7 +85,7 @@ st.markdown("### Tasks")
 st.caption("Add tasks to the selected pet. They persist in the Owner object.")
 
 if pet is not None:
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4 = st.columns(4)
     with col1:
         task_title = st.text_input("Task title", value="Morning walk")
     with col2:
@@ -97,6 +97,8 @@ if pet is not None:
         )
     with col3:
         priority = st.selectbox("Priority", ["low", "medium", "high"], index=2)
+    with col4:
+        preferred_time = st.text_input("Preferred time", value="08:00")
 
     if st.button("Add task"):
         pet.add_task(
@@ -108,7 +110,7 @@ if pet is not None:
                 priority=priority,
                 frequency="daily",
                 deadline="",
-                preferred_time="",
+                preferred_time=preferred_time,
             )
         )
         st.success(f"Added {task_title} for {pet.name}.")
@@ -139,18 +141,42 @@ st.caption("Generate a schedule from the tasks stored in the Owner object.")
 
 if st.button("Generate schedule"):
     scheduler = Scheduler(owner=st.session_state.owner)
+    incomplete_tasks = scheduler.filter_tasks(completed=False)
     plan = scheduler.build_daily_plan()
-    if plan.selected_tasks:
+    scheduled_tasks = scheduler.sort_by_time(plan.selected_tasks)
+    conflict_warnings = scheduler.detect_conflicts(scheduled_tasks)
+
+    if conflict_warnings:
+        for warning in conflict_warnings:
+            st.warning(
+                f"{warning} Consider changing one task's preferred time."
+            )
+    else:
+        st.success("No exact-time conflicts found in the selected schedule.")
+
+    if scheduled_tasks:
+        st.success(
+            f"Schedule created with {len(scheduled_tasks)} incomplete task(s)."
+        )
         st.write("Today's Schedule")
         st.table(
             [
                 {
+                    "Pet": next(
+                        pet.name
+                        for pet in st.session_state.owner.pets
+                        if task in pet.get_tasks()
+                    ),
                     "Task": task.name,
+                    "Preferred time": task.preferred_time or "Any time",
                     "Duration (minutes)": task.duration,
                     "Priority": task.priority,
                 }
-                for task in plan.selected_tasks
+                for task in scheduled_tasks
             ]
         )
     else:
-        st.info("No tasks fit the available schedule.")
+        if incomplete_tasks:
+            st.info("No incomplete tasks fit the available schedule.")
+        else:
+            st.info("There are no incomplete tasks to schedule.")
