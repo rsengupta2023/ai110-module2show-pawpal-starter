@@ -55,18 +55,36 @@ Today's Schedule
 ## 🧪 Testing PawPal+
 
 ```bash
-# Run the full test suite:
-pytest
-
-# Run with coverage:
-pytest --cov
+python -m pytest
 ```
 
-Sample test output:
+The test suite covers:
 
+- Task completion status changes.
+- Adding tasks to a pet.
+- Sorting tasks chronologically by preferred time.
+- Creating the next-day occurrence for a completed daily task.
+- Detecting duplicate task times and returning a warning.
+
+Successful test run:
+
+```text
+============================= test session starts ==============================
+platform darwin -- Python 3.9.6, pytest-8.4.2, pluggy-1.6.0
+rootdir: /Users/rudra/Library/CloudStorage/OneDrive-FloridaAtlanticUniversity(2)/FAU FALL 2026 (Sem 8)/CEN 5035 (Software Engineering)/CP Week 5 project submission/ai110-module2show-pawpal-starter
+collected 5 items
+
+tests/test_pawpal.py .....                                               [100%]
+
+============================== 5 passed in 0.01s ===============================
 ```
-# Paste your pytest output here
-```
+
+**Confidence Level:** (4/5 stars)
+
+The tests cover the most important implemented behaviors, including task management,
+sorting, recurrence, and conflict detection. Additional tests for invalid input,
+overlapping task durations, weekly recurrence, and scheduler time limits would increase
+confidence further.
 
 ## 📐 Smarter Scheduling
 
