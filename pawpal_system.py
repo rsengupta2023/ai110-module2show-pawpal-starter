@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import date
+from datetime import date, datetime, time, timedelta
 from typing import Any
 
 
@@ -72,10 +72,12 @@ class CareTask:
     deadline: str
     preferred_time: str
     completed: bool = False
+    due_date: date = field(default_factory=date.today)
 
-    def mark_complete(self) -> None:
-        """Mark the task as completed."""
+    def mark_complete(self) -> CareTask | None:
+        """Mark the task complete and create the next recurring occurrence."""
         self.completed = True
+        return self.next_occurrence()
 
     def mark_incomplete(self) -> None:
         """Mark the task as incomplete."""
@@ -102,11 +104,33 @@ class CareTask:
 
     def is_due(self) -> bool:
         """Determine whether the task is due."""
-        return not self.completed
+        return not self.completed and self.due_date <= date.today()
 
     def fits_time_available(self, minutes: int) -> bool:
         """Determine whether the task fits within the available time."""
         return minutes >= self.duration
+
+    def next_occurrence(self) -> CareTask | None:
+        """Create the next daily or weekly occurrence when applicable."""
+        frequency = self.frequency.casefold()
+        if frequency == "daily":
+            next_due_date = date.today() + timedelta(days=1)
+        elif frequency == "weekly":
+            next_due_date = date.today() + timedelta(weeks=1)
+        else:
+            return None
+
+        return CareTask(
+            name=self.name,
+            category=self.category,
+            description=self.description,
+            duration=self.duration,
+            priority=self.priority,
+            frequency=self.frequency,
+            deadline=self.deadline,
+            preferred_time=self.preferred_time,
+            due_date=next_due_date,
+        )
 
 
 @dataclass
@@ -202,6 +226,81 @@ class Planner:
             ),
         )
 
+    def sort_by_time(self, tasks: list[CareTask]) -> list[CareTask]:
+        """Sort tasks chronologically by their preferred time."""
+        return sorted(tasks, key=lambda task: self._time_key(task.preferred_time))
+
+    def filter_tasks(
+        self,
+        tasks: list[CareTask] | None = None,
+        *,
+        completed: bool | None = None,
+        pet_name: str | None = None,
+    ) -> list[CareTask]:
+        """Filter tasks by pet name and completion status."""
+        if self.owner is None:
+            return []
+
+        if pet_name is None:
+            candidate_tasks = (
+                self.owner.get_all_tasks() if tasks is None else list(tasks)
+            )
+        else:
+            matching_pet = next(
+                (
+                    pet
+                    for pet in self.owner.pets
+                    if pet.name.casefold() == pet_name.casefold()
+                ),
+                None,
+            )
+            if matching_pet is None:
+                return []
+            candidate_tasks = matching_pet.get_tasks()
+
+        if completed is None:
+            return candidate_tasks
+        return [task for task in candidate_tasks if task.completed is completed]
+
+    def detect_conflicts(self, tasks: list[CareTask] | None = None) -> list[str]:
+        """Return warnings for tasks with matching preferred times."""
+        if self.owner is None:
+            return []
+
+        candidate_tasks = self.owner.get_all_tasks() if tasks is None else list(tasks)
+        tasks_by_time: dict[time, list[tuple[str, CareTask]]] = {}
+
+        for pet in self.owner.pets:
+            for task in pet.get_tasks():
+                if task not in candidate_tasks:
+                    continue
+                task_time = self._time_key(task.preferred_time)
+                if task_time != time.max:
+                    tasks_by_time.setdefault(task_time, []).append((pet.name, task))
+
+        warnings = []
+        for task_time, scheduled_tasks in sorted(tasks_by_time.items()):
+            if len(scheduled_tasks) < 2:
+                continue
+            details = ", ".join(
+                f"{pet_name}: {task.name}" for pet_name, task in scheduled_tasks
+            )
+            warnings.append(
+                f"Conflict at {task_time.strftime('%H:%M')}: {details} "
+                "are scheduled at the same time."
+            )
+        return warnings
+
+    @staticmethod
+    def _time_key(preferred_time: str) -> time:
+        """Convert an HH:MM or AM/PM string into a sortable time."""
+        for time_format in ("%H:%M", "%I:%M %p"):
+            try:
+                return datetime.strptime(preferred_time.strip(), time_format).time()
+            except ValueError:
+                continue
+        return time.max
+
     def build_daily_plan(self) -> DailyPlan:
         """Build a daily plan."""
         due_tasks = self.collect_due_tasks(self.plan_date)
@@ -241,6 +340,20 @@ class Planner:
         if task in self.current_plan.deferred_tasks:
             return f"{task.name} was deferred because it did not fit the available time."
         return f"{task.name} is not part of the current daily plan."
+
+    def complete_task(self, task: CareTask) -> CareTask | None:
+        """Complete a task and add its next recurring occurrence to its pet."""
+        if self.owner is None:
+            raise RuntimeError("An owner is required to complete a task.")
+
+        for pet in self.owner.pets:
+            if task in pet.care_tasks:
+                next_task = task.mark_complete()
+                if next_task is not None:
+                    pet.add_task(next_task)
+                return next_task
+
+        raise ValueError(f"Task not found for owner: {task.name}")
 
 
 Task = CareTask

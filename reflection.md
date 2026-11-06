@@ -31,8 +31,7 @@ The relationships between these classes reflect the system’s responsibilities:
 
 **b. Tradeoffs**
 
-- Describe one tradeoff your scheduler makes.
-- Why is that tradeoff reasonable for this scenario?
+The scheduler currently detects conflicts when two tasks have the same preferred start time. It does not yet detect tasks whose time ranges overlap because one task lasts longer than the other. For example, a 9:00 AM task lasting 30 minutes and a 9:15 AM task would not be reported as a conflict. This is a tradeoff because exact-time matching is simpler to implement and easy to explain, while still catching the most obvious scheduling conflicts. It is reasonable for this early version because the application focuses on demonstrating task organization and prioritization; a future version could compare each task's start and end times for more precise conflict detection.
 
 ---
 

@@ -70,14 +70,19 @@ Sample test output:
 
 ## 📐 Smarter Scheduling
 
-> Fill in once you've implemented scheduling logic.
+PawPal+ includes the following scheduling features in
+[`pawpal_system.py`](./pawpal_system.py):
 
-| Feature | Method(s) | Notes |
-|---------|-----------|-------|
-| Task sorting | | e.g., by priority, duration |
-| Filtering | | e.g., skip tasks if time runs out |
-| Conflict handling | | e.g., overlapping time slots |
-| Recurring tasks | | e.g., daily vs. weekly |
+| Feature | Method(s) | Behavior |
+|---------|-----------|---------|
+| Task sorting | `Planner.sort_by_time()` / `Scheduler.sort_by_time()` | Uses `sorted()` with a lambda key to convert `HH:MM` and AM/PM time strings into sortable values, then orders tasks chronologically. |
+| Task filtering | `Planner.filter_tasks()` / `Scheduler.filter_tasks()` | Filters tasks by pet name, completion status, or both. For example, it can return only Mochi's incomplete tasks. |
+| Conflict detection | `Planner.detect_conflicts()` / `Scheduler.detect_conflicts()` | Groups tasks by preferred start time and returns warning messages when two or more tasks share the same time. It does not stop the program. |
+| Recurring tasks | `CareTask.mark_complete()`, `CareTask.next_occurrence()`, and `Planner.complete_task()` / `Scheduler.complete_task()` | Creates a new occurrence for daily tasks due the next day and weekly tasks due one week later, using `timedelta`. |
+
+The current conflict check identifies exact matching start times. It does not yet detect
+overlaps caused by task durations, such as a 9:00 AM task lasting 30 minutes and another
+task starting at 9:15 AM.
 
 ## 📸 Demo Walkthrough
 
