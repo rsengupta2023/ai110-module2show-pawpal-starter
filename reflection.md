@@ -4,8 +4,16 @@
 
 **a. Initial design**
 
-- Briefly describe your initial UML design.
-- What classes did you include, and what responsibilities did you assign to each?
+The system will support three core user actions:
+
+- Add and manage a pet
+    - The user can create a pet profile by entering information such as the pet’s name, species, age, health needs, and the owner’s preferences. The user can also update or remove the pet’s information when necessary.
+
+- Create and manage pet-care tasks
+    - The user can add care tasks such as walking, feeding, administering medication, grooming, or providing enrichment. Each task can include details such as its duration, priority, frequency, and deadline. Existing tasks can also be updated or removed.
+
+- Generate and view today’s care plan
+    - The user can provide constraints such as the amount of time available and task priorities. The system will then generate a prioritized daily plan, display the selected tasks, and explain why each task was included, scheduled later, or deferred.
 
 **b. Design changes**
 
